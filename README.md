@@ -1,156 +1,78 @@
-# ECO6810 Final Project Starter Repo
 
-This repo is the home for your team's final project.
+# Gender Gaps in Labour-Force Participation
 
-Use it to keep the charter, code, report, outputs, and team history in one place. If you like working in Colab, that is fine. Run notebooks there if you want, but push the important work back here. GitHub is the source of truth. Colab is just one place to run code.
+## Project overview
 
-This public repo is the starter. Your actual team repo should usually be private.
+This project examines how the gender gap in labour-force participation varies across World Bank income groups and how the gap changed between 2019 and 2023.
 
-## Start Here
+The analysis uses World Bank World Development Indicators (WDI) data for male and female labour-force participation rates among people aged 15 and above.
 
-1. Click `Use this template` on GitHub to create your team's own **private** repo.
-2. Rename the repo to something clear and short.
-3. Add teammates as collaborators.
-4. Add the instructor as collaborator if the repo is private.
-5. If GitHub is new, read [GITHUB_PRIMER.md](./GITHUB_PRIMER.md).
-6. If moving from notebooks to scripts is new, read [PYTHON_PROJECT_PRIMER.md](./PYTHON_PROJECT_PRIMER.md).
-7. Read [FINAL_PROJECT.md](./FINAL_PROJECT.md).
-8. Read [SUBMISSION_FLOW.md](./SUBMISSION_FLOW.md).
-9. Start filling [CHARTER.md](./CHARTER.md) in this repo.
-10. Replace the placeholder fields in `main.py`, `report.md`, and `AI_USAGE_LOG.md`.
-11. Run `uv sync && uv run main.py`.
-12. Commit early. Commit often. Keep the repo readable.
+## Research question
 
-## Why GitHub For The Project
+How does the gender gap in labour-force participation vary across World Bank income groups, and how did the pattern change from 2019 to 2023?
 
-For assignments, plain Colab was enough. For a team project, it starts to break down.
+## Measurement
 
-GitHub helps because:
+The gender gap is defined as:
 
-- everyone sees the same current version
-- code, report, figures, and outputs live in one place
-- you can tell what changed and when
-- reproducibility gets much easier
-- handing the project to the instructor is just sharing the repo
+Gender gap (percentage points) = Male labour-force participation rate − Female labour-force participation rate.
 
-The goal is not to turn you into software engineers overnight. The goal is to make team coordination simple and keep the project organized.
+A positive value indicates that the male participation rate exceeds the female participation rate.
 
-## What This Repo Already Gives You
+The primary metric is the difference between the highest and lowest income-group mean gender gaps. The pre-specified comparison threshold is 5 percentage points.
 
-- a fast primer in [GITHUB_PRIMER.md](./GITHUB_PRIMER.md)
-- a notebook-to-project guide in [PYTHON_PROJECT_PRIMER.md](./PYTHON_PROJECT_PRIMER.md)
-- the full project brief in [FINAL_PROJECT.md](./FINAL_PROJECT.md)
-- an exact submission guide in [SUBMISSION_FLOW.md](./SUBMISSION_FLOW.md)
-- the project plan template in [CHARTER.md](./CHARTER.md)
-- a runnable `main.py` that writes the required JSON outputs
-- a `project_code/` folder for reusable Python functions
-- a report template in [report.md](./report.md)
-- an AI usage log template in [AI_USAGE_LOG.md](./AI_USAGE_LOG.md)
-- a `notebooks/` folder for Colab-first exploration
-- probe and output folders in the right shape
-- peer samples in [`peer-samples/README.md`](./peer-samples/README.md)
-- starter ideas in [`starter-ideas/README.md`](./starter-ideas/README.md)
+## Main findings
 
-## The Working Rule
+The analysis dataset contains 931 country-year observations from 187 countries over 2019–2023.
 
-One repo. One main metric. One baseline. One documented run command.
+- Overall mean gender gap: 19.09 percentage points.
+- Highest income-group mean: Upper middle income, approximately 22.73 percentage points.
+- Lowest income-group mean: High income, approximately 15.64 percentage points.
+- Range between the highest and lowest income-group means: approximately 7.10 percentage points.
+- The primary metric exceeds the 5-percentage-point threshold.
 
-If your team remembers only one thing, remember that.
+These are descriptive results. They do not establish that income levels cause differences in gender gaps.
 
-## Repo Map
+## Repository structure
 
-| Path | What it is for |
-|---|---|
-| `GITHUB_PRIMER.md` | Fast GitHub onboarding for students coming from Colab |
-| `PYTHON_PROJECT_PRIMER.md` | How to combine notebooks, Python files, and `main.py` |
-| `FINAL_PROJECT.md` | Full project requirements and grading |
-| `SUBMISSION_FLOW.md` | Exact milestone and final submission steps |
-| `CHARTER.md` | The short project plan you submit first |
-| `main.py` | Your main reproducible run |
-| `project_code/` | Reusable helper functions imported by notebooks or `main.py` |
-| `notebooks/` | Colab notebooks and exploratory work |
-| `data/` | Data files or licence notes |
-| `artifacts/probes/` | Small proofs that your data sources work |
-| `outputs/` | Required JSON outputs plus tables and figures |
-| `report.md` | Final written report |
-| `AI_USAGE_LOG.md` | What you used AI for and what you verified yourself |
-| `peer-samples/` | Strong sample charters based on earlier student project ideas |
-| `starter-ideas/` | Course-proposed project ideas you can adopt and narrow down |
+- `main.py`: Main analysis script.
+- `data/`: Analysis dataset, raw source files, and data documentation.
+- `outputs/`: Summary tables, annual trends, robustness checks, figures, and metric JSON files.
+- `artifacts/probes/`: Data-source documentation.
+- `CHARTER.md`: Research plan and project status.
+- `report.md`: Written research report.
+- `AI_USAGE_LOG.md`: Record of AI assistance.
 
-## Quick Setup
+## Data sources
+
+The analysis uses the following World Bank indicators:
+
+- Male labour-force participation rate: `SL.TLF.CACT.MA.ZS`
+- Female labour-force participation rate: `SL.TLF.CACT.FE.ZS`
+
+The World Bank Countries API provides country metadata and income-group classifications.
+
+The source data and documentation are retained in `data/`.
+
+## Reproducibility
+
+The intended command is:
 
 ```bash
 uv sync
 uv run main.py
 ```
 
-That first run is only a scaffold check. It writes placeholder outputs so you can see the required file shapes. Replace those placeholders before you submit anything.
+The script should regenerate the analysis outputs from the committed input data. Verify the command in a clean environment before submission.
 
-Add project-specific packages in `pyproject.toml` as your work evolves. The starter environment is intentionally light.
+## Limitations
 
-## How To Work As A Team
+- The panel is unbalanced because indicator observations are not available for every country and year.
+- Current income-group classifications are used for the historical period.
+- Country-year observations from the same country may be correlated.
+- The results are descriptive and do not establish causal relationships.
+- Country-level averages cannot explain individual labour-force participation decisions.
 
-- put the project question and stakeholder in the charter first
-- assign clear ownership for data, analysis, writing, and cleanup
-- keep commits small enough that teammates can understand them
-- do not let the report drift away from what the code actually produced
-- if you use a notebook, export the important logic into scripts before the end
+## Project status
 
-## If You Prefer Colab
-
-You can still use it.
-
-Good pattern:
-
-- explore in Colab if that is faster
-- save the notebook in `notebooks/`
-- move stable logic into `project_code/` or helper scripts
-- keep the final reproducible run inside the repo
-
-Bad pattern:
-
-- one teammate has the "real" notebook
-- figures exist only in Colab outputs
-- no one knows which version is current
-- the final result depends on hidden notebook state
-
-## What Will Be Graded
-
-You are not submitting a random folder of files. You are showing that your project works and that your team can explain it clearly.
-
-For the milestone, we mainly ask:
-
-- is the project real?
-- can you access the data?
-- does the repo run?
-
-For the final submission, we mainly ask:
-
-- did you stick to the approved plan?
-- does the repo still run cleanly?
-- does the report match the code and outputs?
-
-The full details are in [FINAL_PROJECT.md](./FINAL_PROJECT.md).
-
-## Before You Submit
-
-For the milestone:
-
-- the charter is approved
-- the run command in `README.md` is accurate
-- each main data source has a small proof that it works
-- `outputs/baseline_metric.json` is real
-- `outputs/milestone_manifest.json` is real
-
-For the final submission:
-
-- `outputs/baseline_metric.json` is real
-- `outputs/primary_metric.json` is real
-- the report matches the code
-- the AI usage log is honest
-
-## One Good Habit
-
-Do not wait until the final week to make the repo clean.
-
-Messy projects do not usually fail because the idea was bad. They fail because the structure never became stable enough to trust.
+The charter and permission for individual submission require instructor confirmation. These approvals must not be represented as complete until they have been granted.
