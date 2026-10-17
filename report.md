@@ -67,12 +67,14 @@ The following outputs support the findings:
 - `outputs/baseline_metric.json` records the overall mean gender gap.
 - `outputs/primary_metric.json` records the primary metric, the 5-percentage-point threshold, and the threshold result.
 - `outputs/income_group_summary.csv` contains income-group means, observation counts, country counts, and standard errors.
-- `outputs/gender_gap_by_income_group.png` visualises the income-group comparison, including country-clustered standard errors.
+- `outputs/gender_gap_by_income_group.png` compares income-group mean gaps. The error bars represent approximately 95% intervals calculated as the mean plus or minus 1.96 country-clustered standard errors. These intervals should be interpreted cautiously, especially for groups with fewer country clusters.
 - `outputs/annual_trend.csv` records the overall annual means.
 - `outputs/annual_income_group_trends.csv` and `outputs/gender_gap_trends_2019_2023.png` show annual patterns by income group.
 - `outputs/country_level_robustness.csv` reports the equal-country-weight robustness check.
 
 The annual overall mean gap was approximately 19.454 percentage points in 2019, 19.144 in 2020, 18.939 in 2021, 19.219 in 2022, and 18.698 in 2023. The overall gap therefore declined between the beginning and end of the period, although the movement was not monotonic.
+
+The annual comparison should be interpreted with caution because the country-year panel is unbalanced and the income-group classifications are held constant across the study period.
 
 ## 7. Limits
 
@@ -92,11 +94,12 @@ The result should therefore be interpreted as evidence of descriptive variation 
 - **Runtime:** Approximately 15 seconds for the analysis job and 20 seconds for the complete GitHub Actions run in the verified execution.
 - **Input dataset:** `data/analysis_dataset.csv`.
 - **Output files:** `data/country_year_gender_gap.csv`; `outputs/baseline_metric.json`; `outputs/primary_metric.json`; `outputs/income_group_summary.csv`; `outputs/annual_trend.csv`; `outputs/annual_income_group_trends.csv`; `outputs/country_level_robustness.csv`; `outputs/gender_gap_by_income_group.png`; `outputs/gender_gap_trends_2019_2023.png`; and `outputs/milestone_manifest.json`.
+- **Output documentation:** `outputs/README.md`.
 
-The GitHub Actions workflow successfully ran the analysis and uploaded its generated outputs as an artifact. The analysis script does not overwrite this report.
+The GitHub Actions workflow successfully ran the analysis and uploaded its generated outputs as an artifact. The generated analysis outputs have since been committed to the repository. The analysis script does not overwrite this report.
 
 ## 10. AI Usage
 
 AI assistance was used to help structure and debug the Python analysis, prepare the GitHub Actions workflow, interpret execution errors, and organise the report. The analysis results were checked against the successful GitHub Actions logs, including the observation count, country count, overall mean gap, primary metric, threshold, and income-group results.
 
-The detailed record of AI assistance and manual checks is provided in [AI_USAGE_LOG.md](./AI_USAGE_LOG.md). The project team should ensure this section accurately reflects all assistance used and all checks actually performed.
+The detailed record of AI assistance and manual checks is provided in [AI_USAGE_LOG.md](./AI_USAGE_LOG.md). This log records the AI assistance used and the verification checks performed. The author remains responsible for the accuracy, interpretation, and final presentation of the analysis.
