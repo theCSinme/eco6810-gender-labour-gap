@@ -30,9 +30,15 @@ The baseline is the overall mean gender gap across all valid country-year observ
 
 The mean gender gap differs across World Bank income groups, with a difference of at least five percentage points between the group with the largest mean gap and the group with the smallest mean gap.
 
+
 ## 6. Data sources and access plan
 
-The project will use the World Bank World Development Indicators API for male and female labour-force participation rates and the World Bank Countries API for income-group classifications. Python will be used to retrieve and process the data. The analysis will document the data sources, indicator definitions, retrieval date, and missing observations. The proposed indicators and sample will be verified before finalising the analysis.
+The analysis uses World Bank World Development Indicators series `SL.TLF.CACT.MA.ZS` (male labour-force participation rate) and `SL.TLF.CACT.FE.ZS` (female labour-force participation rate), together with country income-group metadata.
+
+The raw indicator files are stored locally in `data/raw/male_lfp.csv` and `data/raw/female_lfp.csv`. The current analysis script reads the prepared dataset from `data/analysis_dataset.csv` and does not require live API access when it runs. The analysis period is 2019–2023, with observations retained for the four World Bank income groups.
+
+The project will document the original download locations, retrieval date, indicator definitions, missing observations, and applicable data-use and redistribution terms. The source licence and attribution requirements must be verified before distributing the data files publicly.
+
 
 ## 7. Scope limits
 
