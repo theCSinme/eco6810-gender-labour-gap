@@ -1,66 +1,106 @@
-# Project Charter — Gender Gaps in Labour-Force Participation
 
-## Header
+# Project Charter: Gender Gaps in Labour-Force Participation
 
-| Field | Value |
-|---|---|
-| Team members | Jaishree Tomar — individual submission, pending instructor approval |
-| Project type | Descriptive |
-| Estimated hours per person | To be updated based on actual hours worked |
-| Charter version | v1 — proposed |
-| Date | 2026-10-01 |
+## 1. Project overview
 
-## 1. Problem and stakeholder
+**Project title:** Gender Gaps in Labour-Force Participation Across Income Groups
 
-This project examines how the gender gap in labour-force participation differs across World Bank income groups. The findings may be useful to researchers and organisations working on gender equality and labour-market inclusion. The analysis will identify differences across countries without claiming to establish their causes.
+**Course:** ECO6810
 
-## 2. Main outcome variable
+**Study period:** 2019–2023
 
-The main outcome is the gender gap in labour-force participation, measured in percentage points. For each country-year observation, it is calculated as the male participation rate minus the female participation rate among people aged 15 and above. The planned indicators are World Bank WDI series `SL.TLF.CACT.MA.ZS` and `SL.TLF.CACT.FE.ZS`. The proposed sample covers 2019–2023, subject to data availability, with countries classified by World Bank income group.
+**Geographical coverage:** Countries with usable World Bank indicator observations and country metadata.
 
-## 3. Main quantitative success threshold
+**Project status:** Analysis completed; instructor approval of the charter and permission for individual submission remain pending.
 
-The project will aim to report mean gender-gap estimates and standard errors for at least three income groups, with at least 10 valid country-year observations per included group. The sample sizes and uncertainty measures will be reported alongside the estimates. This threshold assesses analytical completeness, not whether the hypothesis is supported.
+## 2. Research question
 
-## 4. Baseline to beat
+How does the gender gap in labour-force participation vary across World Bank income groups, and how did the pattern change from 2019 to 2023?
 
-The baseline is the overall mean gender gap across all valid country-year observations in the sample. The income-group estimates will be compared with this overall mean.
+## 3. Motivation
 
-## 5. Falsifiable hypothesis
+Labour-force participation is an important dimension of economic activity. Differences between male and female participation rates provide a descriptive measure of gender inequality in participation.
 
-The mean gender gap differs across World Bank income groups, with a difference of at least five percentage points between the group with the largest mean gap and the group with the smallest mean gap.
+Comparing these gaps across income groups can establish whether the observed differences are small or substantial. Examining annual patterns can also show whether the gaps changed over the study period.
 
+The project does not assume that national income causes these differences.
 
-## 6. Data sources and access plan
+## 4. Data sources
 
-The analysis uses World Bank World Development Indicators series `SL.TLF.CACT.MA.ZS` (male labour-force participation rate) and `SL.TLF.CACT.FE.ZS` (female labour-force participation rate), together with country income-group metadata.
+The project uses World Bank World Development Indicators:
 
-The raw indicator files are stored locally in `data/raw/male_lfp.csv` and `data/raw/female_lfp.csv`. The current analysis script reads the prepared dataset from `data/analysis_dataset.csv` and does not require live API access when it runs. The analysis period is 2019–2023, with observations retained for the four World Bank income groups.
+- Male labour-force participation rate, ages 15 and above: `SL.TLF.CACT.MA.ZS`
+- Female labour-force participation rate, ages 15 and above: `SL.TLF.CACT.FE.ZS`
 
-The project will document the original download locations, retrieval date, indicator definitions, missing observations, and applicable data-use and redistribution terms. The source licence and attribution requirements must be verified before distributing the data files publicly.
+Country names, regions, and income groups are obtained from World Bank country metadata.
 
+The study period is 2019–2023. Source files and the prepared analysis dataset are retained in the repository.
 
-## 7. Scope limits
+## 5. Variables and measurement
 
-- The project is descriptive and does not estimate causal effects.
-- It does not establish why gender gaps arise.
-- Missing observations and differences in data coverage may affect comparisons.
-- Income-group classifications may not reflect historical classifications for every year.
-- Country-level results cannot establish patterns for individual workers.
+The main outcome is the gender gap in labour-force participation, measured in percentage points.
 
-## 8. Risks and fallback
+Gender gap = Male participation rate − Female participation rate.
 
-The main risk is insufficient data coverage for some countries or income groups. If fewer than three groups meet the sample-size threshold, the project will document this limitation and reconsider the sample period or scope. Missing values will not be replaced with invented observations.
+A positive value indicates higher male participation.
 
-## 9. Reproducibility checklist
+The main grouping variable is the World Bank income group. Year is used to describe changes over time.
 
-- [ ] `uv run main.py` runs the analysis end-to-end.
-- [ ] `outputs/primary_metric.json` contains the computed primary metric and threshold status.
-- [ ] `outputs/baseline_metric.json` contains the computed baseline.
-- [ ] `outputs/milestone_manifest.json` records the actual project status.
-- [ ] `README.md` contains reproducible setup and run instructions.
-- [ ] The data retrieval process and source information are documented.
+## 6. Primary metric
 
-## Sign-off
+The primary metric is the range between the largest and smallest income-group mean gender gaps.
 
-Status: Proposed. Instructor approval and permission for an individual submission are pending.
+Primary metric = Maximum income-group mean gap − Minimum income-group mean gap.
+
+The pre-specified threshold is 5 percentage points.
+
+The threshold is a project comparison benchmark, not a statistical significance test.
+
+## 7. Empirical strategy
+
+The analysis will:
+
+1. Merge male and female participation indicators by country and year.
+2. Attach country metadata and income-group classifications.
+3. Calculate the male-minus-female participation gap.
+4. Report the overall mean gap.
+5. Compare mean gaps across income groups.
+6. Describe annual changes from 2019 to 2023.
+7. Conduct an equal-country-weight robustness check.
+8. Save tables, figures, and machine-readable metric outputs.
+
+Uncertainty estimates must account for the repeated observations within countries where country-clustered standard errors are reported.
+
+## 8. Main results
+
+The prepared analysis dataset contains 931 country-year observations from 187 countries.
+
+The overall mean gender gap is approximately 19.09 percentage points.
+
+The mean gap is approximately 22.73 percentage points in the upper-middle-income group and 15.64 percentage points in the high-income group.
+
+The difference between the largest and smallest group means is approximately 7.10 percentage points, above the 5-percentage-point threshold.
+
+These values are descriptive and should be interpreted alongside the final generated tables and figures.
+
+## 9. Limitations
+
+- The country-year panel is unbalanced.
+- Current income-group classifications are applied to historical observations.
+- Repeated observations within countries are not independent.
+- The comparison is descriptive and does not identify causal effects.
+- Aggregate country-level data cannot explain individual decisions or within-country differences.
+
+## 10. Reproducibility
+
+The intended run command is:
+
+`uv sync && uv run main.py`
+
+The repository should contain the input data, source documentation, analysis script, generated outputs, and final report.
+
+## 11. Submission and approval status
+
+The analysis has been prepared as an individual project. Permission to submit individually and approval of the project charter must be obtained from the instructor.
+
+No approval is claimed until it has been received.
