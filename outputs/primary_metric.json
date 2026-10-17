@@ -1,8 +1,9 @@
 {
-  "metric_name": "replace_me_primary",
-  "value": 0.0,
-  "threshold": 0.0,
-  "passed": false,
-  "notes": "Template value. Replace this with your real project metric before the final submission.",
-  "is_template": true
+  "metric_name": "range_between_income_group_mean_gaps_pp",
+  "value": 7.096956919548557,
+  "threshold": 5.0,
+  "passed": true,
+  "unit": "percentage points",
+  "notes": "Difference between the largest and smallest income-group mean gender gaps across available country-year observations.",
+  "is_template": false
 }

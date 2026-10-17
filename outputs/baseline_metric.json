@@ -1,7 +1,7 @@
 {
-  "metric_name": "replace_me_baseline",
-  "value": 0.0,
-  "unit": "replace_me_unit",
-  "notes": "Template value. Replace this with your real baseline before the milestone.",
-  "is_template": true
+  "metric_name": "overall_mean_gender_gap_pp",
+  "value": 19.09201396348013,
+  "unit": "percentage points",
+  "notes": "Mean male-minus-female labour-force participation gap across available country-year observations, 2019\u20132023.",
+  "is_template": false
 }
