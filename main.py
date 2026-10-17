@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import warnings
 from pathlib import Path
 
 import matplotlib
@@ -10,9 +11,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
-# --------------------------------------------------
-# 1. Project paths and settings
-# --------------------------------------------------
+# ============================================================
+# 1. PROJECT PATHS AND SETTINGS
+# ============================================================
 
 ROOT = Path(__file__).resolve().parent
 DATA_DIR = ROOT / "data"
@@ -24,27 +25,32 @@ START_YEAR = 2019
 END_YEAR = 2023
 THRESHOLD_PP = 5.0
 
+EXPECTED_INCOME_GROUPS = {
+    "High income",
+    "Upper middle income",
+    "Lower middle income",
+    "Low income",
+}
 
-# --------------------------------------------------
-# 2. Utility functions
-# --------------------------------------------------
+
+# ============================================================
+# 2. UTILITY FUNCTIONS
+# ============================================================
 
 def write_json(path: Path, payload: dict) -> None:
-    """Save a dictionary as a JSON file."""
+    """Write a JSON file without non-standard NaN values."""
     path.write_text(
         json.dumps(payload, indent=2, allow_nan=False) + "\n",
         encoding="utf-8",
     )
 
 
-def country_clustered_se(
-    group_data: pd.DataFrame,
-) -> float:
+def country_clustered_se(group_data: pd.DataFrame) -> float:
     """
-    Calculate the country-clustered standard error of a group mean.
+    Calculate a country-clustered standard error for a group mean.
 
     Repeated observations within a country are treated as one cluster.
-    This allows within-country dependence across years.
+    This allows observations from the same country to be dependent.
     """
     group_data = group_data.dropna(
         subset=["gender_gap_pp", "iso3"]
@@ -57,7 +63,6 @@ def country_clustered_se(
         return float("nan")
 
     group_mean = group_data["gender_gap_pp"].mean()
-
     residuals = group_data["gender_gap_pp"] - group_mean
 
     cluster_sums = (
@@ -73,21 +78,8 @@ def country_clustered_se(
     return float(max(variance, 0.0) ** 0.5)
 
 
-# --------------------------------------------------
-# 3. Load and validate the prepared dataset
-# --------------------------------------------------
-
-def load_dataset() -> pd.DataFrame:
-    """Load the prepared CSV and validate its structure."""
-
-    if not DATASET_PATH.exists():
-        raise FileNotFoundError(
-            f"Dataset not found: {DATASET_PATH}\n"
-            "Upload analysis_dataset.csv into the data folder."
-        )
-
-    data = pd.read_csv(DATASET_PATH)
-
+def validate_required_columns(data: pd.DataFrame) -> None:
+    """Check that the input dataset has the required columns."""
     required_columns = {
         "Country Code",
         "Year",
@@ -100,12 +92,28 @@ def load_dataset() -> pd.DataFrame:
 
     if missing:
         raise ValueError(
-            "The dataset is missing these required columns: "
+            "The dataset is missing required columns: "
             + ", ".join(sorted(missing))
         )
 
-    # Prefer the ISO3 code from the explicit iso3 column,
-    # falling back to Country Code if needed.
+
+# ============================================================
+# 3. LOAD AND VALIDATE THE PREPARED DATASET
+# ============================================================
+
+def load_dataset() -> pd.DataFrame:
+    """Load, clean, and validate the prepared analysis dataset."""
+
+    if not DATASET_PATH.exists():
+        raise FileNotFoundError(
+            f"Dataset not found: {DATASET_PATH}\n"
+            "Ensure data/analysis_dataset.csv is committed."
+        )
+
+    data = pd.read_csv(DATASET_PATH)
+    validate_required_columns(data)
+
+    # Standardise country identifiers.
     if "iso3" in data.columns:
         data["iso3"] = data["iso3"].fillna(
             data["Country Code"]
@@ -113,7 +121,9 @@ def load_dataset() -> pd.DataFrame:
     else:
         data["iso3"] = data["Country Code"]
 
-    # Use country_name where available, otherwise Country Name.
+    data["iso3"] = data["iso3"].astype("string").str.strip()
+
+    # Preserve country names when available.
     if "country_name" in data.columns:
         if "Country Name" in data.columns:
             data["country"] = data["country_name"].fillna(
@@ -126,6 +136,7 @@ def load_dataset() -> pd.DataFrame:
     else:
         data["country"] = data["iso3"]
 
+    # Convert numeric variables safely.
     data["year"] = pd.to_numeric(
         data["Year"], errors="coerce"
     )
@@ -136,6 +147,11 @@ def load_dataset() -> pd.DataFrame:
         data["female_lfp"], errors="coerce"
     )
 
+    data["income_group"] = (
+        data["income_group"].astype("string").str.strip()
+    )
+
+    # Remove observations missing variables required for analysis.
     data = data.dropna(
         subset=[
             "iso3",
@@ -146,40 +162,112 @@ def load_dataset() -> pd.DataFrame:
         ]
     ).copy()
 
+    # Restrict the study period.
     data = data[
         data["year"].between(START_YEAR, END_YEAR)
     ].copy()
 
+    if data.empty:
+        raise ValueError(
+            "No usable observations remain for the study period."
+        )
+
+    # Validate years before converting to integers.
+    if not (data["year"] % 1 == 0).all():
+        raise ValueError("Non-integer year values were found.")
+
     data["year"] = data["year"].astype(int)
-    data["iso3"] = data["iso3"].astype(str).str.strip()
-    data["income_group"] = (
-        data["income_group"].astype(str).str.strip()
+
+    # Check for empty identifiers and income groups.
+    if data["iso3"].eq("").any():
+        raise ValueError("Empty country identifiers were found.")
+
+    if data["income_group"].eq("").any():
+        raise ValueError("Empty income-group values were found.")
+
+    # Validate participation rates.
+    invalid_rates = (
+        ~data["male_lfp"].between(0, 100)
+        | ~data["female_lfp"].between(0, 100)
     )
 
-    # Recalculate the outcome from the original indicator columns.
+    if invalid_rates.any():
+        examples = data.loc[
+            invalid_rates,
+            ["country", "iso3", "year", "male_lfp", "female_lfp"],
+        ].head(10)
+
+        raise ValueError(
+            f"Found {invalid_rates.sum()} observations with "
+            "participation rates outside 0–100.\n"
+            + examples.to_string(index=False)
+        )
+
+    # Flag possible regional aggregates for review.
+    # Do not automatically remove them based on names alone.
+    aggregate_names = {
+        "world",
+        "south asia",
+        "sub-saharan africa",
+        "europe & central asia",
+        "europe and central asia",
+        "east asia & pacific",
+        "east asia and pacific",
+        "latin america & caribbean",
+        "latin america and caribbean",
+        "middle east & north africa",
+        "middle east and north africa",
+        "north america",
+    }
+
+    names_lower = data["country"].astype(str).str.strip().str.lower()
+    possible_aggregates = names_lower.isin(aggregate_names)
+
+    if possible_aggregates.any():
+        found = sorted(
+            data.loc[possible_aggregates, "country"]
+            .astype(str)
+            .unique()
+        )
+        warnings.warn(
+            "Possible regional aggregates require review: "
+            + ", ".join(found)
+            + ". Check the source metadata before deciding whether "
+              "to exclude these observations.",
+            stacklevel=2,
+        )
+
+    # Recalculate the outcome from the two input indicators.
     data["gender_gap_pp"] = (
         data["male_lfp"] - data["female_lfp"]
     )
 
-    data = data.dropna(
-        subset=["gender_gap_pp", "income_group"]
+    # Reject duplicate country-year observations.
+    duplicates = data.duplicated(
+        ["iso3", "year"], keep=False
     )
 
-    if data.empty:
-        raise ValueError(
-            "No usable observations remain after data cleaning."
-        )
-
-    if data.duplicated(["iso3", "year"]).any():
-        duplicates = data.loc[
-            data.duplicated(["iso3", "year"], keep=False),
-            ["iso3", "year"],
+    if duplicates.any():
+        examples = data.loc[
+            duplicates, ["iso3", "country", "year"]
         ].head(10)
 
         raise ValueError(
             "Duplicate country-year observations found. "
-            "Check the prepared CSV.\n"
-            + duplicates.to_string(index=False)
+            "Check the prepared dataset.\n"
+            + examples.to_string(index=False)
+        )
+
+    # Verify income-group coverage.
+    observed_groups = set(data["income_group"].dropna().unique())
+    unexpected_groups = observed_groups - EXPECTED_INCOME_GROUPS
+
+    if unexpected_groups:
+        warnings.warn(
+            "Income-group labels differ from the expected labels: "
+            + ", ".join(sorted(unexpected_groups))
+            + ". Verify the source metadata and group names.",
+            stacklevel=2,
         )
 
     return data.sort_values(
@@ -187,9 +275,9 @@ def load_dataset() -> pd.DataFrame:
     ).reset_index(drop=True)
 
 
-# --------------------------------------------------
-# 4. Main analysis
-# --------------------------------------------------
+# ============================================================
+# 4. MAIN ANALYSIS
+# ============================================================
 
 def main() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -201,21 +289,25 @@ def main() -> None:
     number_of_observations = len(data)
     number_of_countries = data["iso3"].nunique()
 
-    # Save the processed dataset used for the analysis.
+    print(f"Study period: {START_YEAR}–{END_YEAR}")
+    print(f"Country-year observations: {number_of_observations}")
+    print(f"Unique country identifiers: {number_of_countries}")
+
+    # Save the processed country-year dataset.
     data.to_csv(
         DATA_DIR / "country_year_gender_gap.csv",
         index=False,
     )
 
-    # ----------------------------------------------
+    # --------------------------------------------------------
     # Overall baseline
-    # ----------------------------------------------
+    # --------------------------------------------------------
 
     baseline = float(data["gender_gap_pp"].mean())
 
-    # ----------------------------------------------
+    # --------------------------------------------------------
     # Income-group descriptive statistics
-    # ----------------------------------------------
+    # --------------------------------------------------------
 
     summary = (
         data.groupby("income_group")
@@ -228,13 +320,11 @@ def main() -> None:
         .reset_index()
     )
 
-    # Ordinary standard error is retained for reference only.
     summary["standard_error_country_year"] = (
         summary["sd_country_year"]
         / summary["observations"].pow(0.5)
     )
 
-    # Calculate country-clustered standard errors.
     clustered_results = []
 
     for group_name, group_data in data.groupby(
@@ -242,8 +332,8 @@ def main() -> None:
     ):
         clustered_results.append({
             "income_group": group_name,
-            "standard_error_clustered": (
-                country_clustered_se(group_data)
+            "standard_error_clustered": country_clustered_se(
+                group_data
             ),
         })
 
@@ -265,9 +355,9 @@ def main() -> None:
         index=False,
     )
 
-    # ----------------------------------------------
+    # --------------------------------------------------------
     # Overall annual trend
-    # ----------------------------------------------
+    # --------------------------------------------------------
 
     annual_trend = (
         data.groupby("year")["gender_gap_pp"]
@@ -283,9 +373,9 @@ def main() -> None:
         index=False,
     )
 
-    # ----------------------------------------------
+    # --------------------------------------------------------
     # Annual trends by income group
-    # ----------------------------------------------
+    # --------------------------------------------------------
 
     annual_groups = (
         data.groupby(["year", "income_group"])["gender_gap_pp"]
@@ -301,14 +391,14 @@ def main() -> None:
         index=False,
     )
 
-    # ----------------------------------------------
+    # --------------------------------------------------------
     # Robustness: equal weight for every country
-    # ----------------------------------------------
+    # --------------------------------------------------------
 
     country_means = (
-        data.groupby(
-            ["iso3", "country", "income_group"]
-        )["gender_gap_pp"]
+        data.groupby(["iso3", "country", "income_group"])[
+            "gender_gap_pp"
+        ]
         .mean()
         .reset_index(name="country_mean_gap_pp")
     )
@@ -335,9 +425,9 @@ def main() -> None:
         index=False,
     )
 
-    # ----------------------------------------------
+    # --------------------------------------------------------
     # Primary metric and threshold
-    # ----------------------------------------------
+    # --------------------------------------------------------
 
     primary_value = float(
         summary["mean_gap_pp"].max()
@@ -346,10 +436,9 @@ def main() -> None:
 
     passed = bool(primary_value >= THRESHOLD_PP)
 
-    # ----------------------------------------------
+    # --------------------------------------------------------
     # Figure 1: gender gap by income group
-    # Uses country-clustered standard errors.
-    # ----------------------------------------------
+    # --------------------------------------------------------
 
     ordered = summary.sort_values("mean_gap_pp")
 
@@ -387,9 +476,9 @@ def main() -> None:
 
     plt.close()
 
-    # ----------------------------------------------
+    # --------------------------------------------------------
     # Figure 2: annual trends by income group
-    # ----------------------------------------------
+    # --------------------------------------------------------
 
     plt.figure(figsize=(10, 6))
 
@@ -420,9 +509,9 @@ def main() -> None:
 
     plt.close()
 
-    # ----------------------------------------------
-    # Required baseline metric JSON
-    # ----------------------------------------------
+    # --------------------------------------------------------
+    # Baseline metric JSON
+    # --------------------------------------------------------
 
     write_json(
         OUTPUTS_DIR / "baseline_metric.json",
@@ -430,6 +519,8 @@ def main() -> None:
             "metric_name": "overall_mean_gender_gap_pp",
             "value": baseline,
             "unit": "percentage points",
+            "observations": number_of_observations,
+            "countries": number_of_countries,
             "notes": (
                 "Mean male-minus-female labour-force "
                 "participation gap across available "
@@ -439,9 +530,9 @@ def main() -> None:
         },
     )
 
-    # ----------------------------------------------
-    # Required primary metric JSON
-    # ----------------------------------------------
+    # --------------------------------------------------------
+    # Primary metric JSON
+    # --------------------------------------------------------
 
     write_json(
         OUTPUTS_DIR / "primary_metric.json",
@@ -462,9 +553,9 @@ def main() -> None:
         },
     )
 
-    # ----------------------------------------------
+    # --------------------------------------------------------
     # Milestone manifest
-    # ----------------------------------------------
+    # --------------------------------------------------------
 
     write_json(
         OUTPUTS_DIR / "milestone_manifest.json",
@@ -493,9 +584,9 @@ def main() -> None:
         },
     )
 
-    # ----------------------------------------------
+    # --------------------------------------------------------
     # Print verification results
-    # ----------------------------------------------
+    # --------------------------------------------------------
 
     print("\n" + "=" * 55)
     print("ANALYSIS COMPLETED")
