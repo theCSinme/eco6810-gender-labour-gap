@@ -1,4 +1,3 @@
-
 # Project Charter: Gender Gaps in Labour-Force Participation
 
 ## 1. Project overview
@@ -34,13 +33,13 @@ The project uses World Bank World Development Indicators:
 
 Country names, regions, and income groups are obtained from World Bank country metadata.
 
-The study period is 2019–2023. Source files and the prepared analysis dataset are retained in the repository.
+The study period is 2019–2023. The prepared dataset, `data/analysis_dataset.csv`, is retained in the repository and used as the input to the final analysis script. Source files and data-access documentation are also retained in the repository.
 
 ## 5. Variables and measurement
 
 The main outcome is the gender gap in labour-force participation, measured in percentage points.
 
-Gender gap = Male participation rate − Female participation rate.
+**Gender gap = Male participation rate − Female participation rate.**
 
 A positive value indicates higher male participation.
 
@@ -50,7 +49,7 @@ The main grouping variable is the World Bank income group. Year is used to descr
 
 The primary metric is the range between the largest and smallest income-group mean gender gaps.
 
-Primary metric = Maximum income-group mean gap − Minimum income-group mean gap.
+**Primary metric = Maximum income-group mean gap − Minimum income-group mean gap.**
 
 The pre-specified threshold is 5 percentage points.
 
@@ -60,44 +59,47 @@ The threshold is a project comparison benchmark, not a statistical significance 
 
 The analysis will:
 
-1. Merge male and female participation indicators by country and year.
-2. Attach country metadata and income-group classifications.
+1. Load the prepared country-year dataset containing male and female participation indicators.
+2. Validate country identifiers, years, indicator values, and income-group classifications.
 3. Calculate the male-minus-female participation gap.
 4. Report the overall mean gap.
 5. Compare mean gaps across income groups.
 6. Describe annual changes from 2019 to 2023.
-7. Conduct an equal-country-weight robustness check.
+7. Conduct an equal-country-weight robustness check by first averaging observations within each country.
 8. Save tables, figures, and machine-readable metric outputs.
 
-Uncertainty estimates must account for the repeated observations within countries where country-clustered standard errors are reported.
+Country-clustered standard errors are calculated for income-group means to allow for dependence between repeated observations from the same country. The equal-country-weight robustness check provides a separate descriptive comparison and does not establish causality.
 
 ## 8. Main results
 
 The prepared analysis dataset contains 931 country-year observations from 187 countries.
 
-The overall mean gender gap is approximately 19.09 percentage points.
+The overall mean gender gap is approximately 19.092 percentage points.
 
-The mean gap is approximately 22.73 percentage points in the upper-middle-income group and 15.64 percentage points in the high-income group.
+The mean gap is approximately 22.735 percentage points in the upper-middle-income group and 15.638 percentage points in the high-income group.
 
-The difference between the largest and smallest group means is approximately 7.10 percentage points, above the 5-percentage-point threshold.
+The difference between the largest and smallest group means is approximately 7.097 percentage points, above the 5-percentage-point threshold.
 
-These values are descriptive and should be interpreted alongside the final generated tables and figures.
+The threshold is therefore met. These values are descriptive and should be interpreted alongside the generated tables and figures.
 
 ## 9. Limitations
 
 - The country-year panel is unbalanced.
 - Current income-group classifications are applied to historical observations.
-- Repeated observations within countries are not independent.
-- The comparison is descriptive and does not identify causal effects.
+- Repeated observations within countries may be dependent.
+- Country-clustered standard errors account for within-country dependence but do not resolve confounding or identify causal effects.
 - Aggregate country-level data cannot explain individual decisions or within-country differences.
+- Differences between income groups may reflect several factors that this project does not separately identify.
 
 ## 10. Reproducibility
 
-The intended run command is:
+The intended run commands are:
 
-`uv sync && uv run main.py`
+`uv sync`
 
-The repository should contain the input data, source documentation, analysis script, generated outputs, and final report.
+`uv run main.py`
+
+The repository should contain the prepared input data, source documentation, analysis script, generated outputs, and final report. The GitHub Actions workflow has successfully executed the analysis using the committed dataset.
 
 ## 11. Submission and approval status
 
