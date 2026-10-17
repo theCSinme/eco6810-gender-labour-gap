@@ -1,26 +1,37 @@
+
 # AI Usage Log
 
-Keep this short and honest.
+## Project
 
-The point is not to confess that you used AI. Of course you used AI. The point is to show where it helped, what you trusted, and what you checked yourself.
+Gender Gaps in Labour-Force Participation Across Income Groups
 
-## Log
+## Purpose of AI assistance
 
-| Date | Tool | What you used it for | What you verified yourself |
-|---|---|---|---|
-| YYYY-MM-DD | Claude / ChatGPT / Gemini / Copilot / other | Drafted a data-cleaning function | Re-ran the code, checked the output on 20 rows, fixed one wrong column mapping |
-| YYYY-MM-DD | ... | ... | ... |
+ChatGPT was used as a supplementary tool during project development.
 
-## Things To Avoid
+## Tasks for which AI assistance was used
 
-- "used AI for coding"
-- "used ChatGPT for analysis"
-- "AI helped with debugging"
+- Clarifying the structure of the analysis and the research question.
+- Discussing the construction and interpretation of the gender gap in percentage points.
+- Assisting with Python code organization and debugging.
+- Reviewing the interpretation of descriptive statistics and robustness checks.
+- Improving the organization and clarity of the project documentation.
+- Identifying limitations and avoiding unsupported causal claims.
+- Providing guidance on repository organization and reproducibility.
 
-Those lines are too vague to be useful.
+## Verification
 
-## Better
+AI-generated suggestions were reviewed against the project code, data, and outputs. Numerical findings reported in the final report should be checked against the committed output files.
 
-- "Claude suggested the first version of the FRED fetch helper; we changed the parsing after checking the missing-value handling"
-- "ChatGPT proposed a DiD specification; we kept the controls but rewrote the treatment definition after reading the data"
-- "Gemini rewrote the report summary; we replaced two claims that overstated causality"
+AI assistance does not replace responsibility for understanding the methodology, verifying calculations, checking source documentation, and explaining the results.
+
+## Limitations
+
+The project uses observational, country-level data. The analysis does not identify the causal effect of national income on gender gaps in labour-force participation.
+
+## Outstanding checks
+
+- Confirm that the committed code runs from the documented command.
+- Confirm that the report agrees with the generated output files.
+- Confirm source attribution and data documentation.
+- Obtain instructor approval of the charter and individual-submission arrangement.
